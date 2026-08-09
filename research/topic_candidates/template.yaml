@@ -1,0 +1,35 @@
+topic_id: null
+working_title: null
+status: candidate
+
+research_question: null
+proposed_contribution: null
+closest_literature: []
+unresolved_gap: null
+falsifiable_hypotheses: []
+
+required_data: []
+data_constraints: []
+mathematical_prerequisites: []
+computational_requirements: []
+
+baselines: []
+null_models: []
+validation_design: null
+replication_plan: null
+
+supporting_evidence: []
+contradicting_evidence: []
+reasons_topic_may_fail: []
+next_decisive_experiment: null
+
+evaluation:
+  scientific_importance: null
+  novelty: null
+  mathematical_depth: null
+  falsifiability: null
+  data_feasibility: null
+  reproducibility: null
+  practical_relevance: null
+
+decision_notes: null

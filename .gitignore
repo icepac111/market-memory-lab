@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Environments
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+
+# Secrets and credentials
+*.pem
+*.key
+*.p12
+credentials.json
+secrets.toml
+
+# Local, generated, restricted, or licensed data
+*.db
+*.duckdb
+data/raw/
+data/cache/
+data/generated/
+data/licensed/
+data/private/
+
+# Model artifacts
+models/
+artifacts/
+*.joblib
+*.pkl
+*.pt
+*.pth
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# Editors and operating system
+.vscode/
+.idea/
+.DS_Store
+
+# Build outputs
+build/
+dist/
+*.egg-info/

@@ -1,0 +1,48 @@
+experiment_id: null
+title: null
+status: proposed
+
+question: null
+hypothesis: null
+falsification_condition: null
+
+data:
+  provider: null
+  source_id: null
+  license: null
+  asset_ids: []
+  asset_class: null
+  venue: null
+  currency: null
+  timezone: null
+  observation_start: null
+  observation_end: null
+  retrieval_time: null
+  sampling_frequency: null
+  data_cutoff: null
+  missing_data_policy: null
+
+method:
+  estimator: null
+  estimator_parameters: {}
+  assumptions: []
+  uncertainty_method: null
+  null_models: []
+  baselines: []
+  validation_design: null
+  random_seed: null
+
+results:
+  primary_metric: null
+  supporting_evidence: []
+  contradicting_evidence: []
+  conclusion_state: insufficient_evidence
+
+reproducibility:
+  code_version: null
+  environment_file: null
+  input_hashes: {}
+  output_hashes: {}
+
+limitations: []
+next_decisive_experiment: null

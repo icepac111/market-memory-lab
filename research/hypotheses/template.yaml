@@ -1,0 +1,22 @@
+hypothesis_id: null
+title: null
+status: proposed
+registration_time: null
+
+claim: null
+motivation: null
+data_available_at_registration: []
+expected_result: null
+
+test_plan:
+  estimator: null
+  null_models: []
+  baselines: []
+  validation_design: null
+  significance_or_decision_rule: null
+
+falsification_condition: null
+observed_result: null
+conclusion_state: insufficient_evidence
+what_changed_our_mind: null
+code_version: null

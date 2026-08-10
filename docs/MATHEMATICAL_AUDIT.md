@@ -353,3 +353,48 @@ Required assumptions and limitations:
 - this is asymptotic inference
 - HAC does not solve endogeneity, omitted variables, structural breaks,
   data snooping, or poor model specification
+
+## IID Student-t heavy-tail null
+
+The heavy-tail null is generated as:
+
+X_t
+= mean
+  + sigma
+    times square_root((nu - 2) / nu)
+    times T_t
+
+where T_t independently follows a Student-t distribution with
+degrees of freedom nu.
+
+For nu greater than 2:
+
+E[X_t] = mean
+
+Var[X_t] = sigma squared
+
+Temporal dependence remains absent by construction.
+
+When 2 < nu <= 4:
+
+- variance is finite
+- the fourth moment is infinite
+- theoretical excess kurtosis is not finite
+
+When nu > 4:
+
+theoretical excess kurtosis = 6 / (nu - 4)
+
+Purpose:
+
+The process tests whether future estimators confuse heavy tails and
+extreme observations with temporal memory or structural persistence.
+
+Scientific boundaries:
+
+- IID Student-t is not a complete model of financial returns.
+- Heavy tails do not imply temporal dependence.
+- A finite sample can contain extreme apparent patterns.
+- Sample kurtosis can be unstable, especially near the fourth-moment
+  boundary.
+- No empirical market conclusion follows from the synthetic generator.

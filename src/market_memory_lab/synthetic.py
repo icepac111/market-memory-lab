@@ -114,3 +114,108 @@ def iid_gaussian(
             "sigma": sigma,
         },
     )
+
+
+def iid_student_t(
+    *,
+    n: int,
+    seed: int,
+    degrees_of_freedom: float = 5.0,
+    mean: float = 0.0,
+    sigma: float = 1.0,
+) -> SyntheticSeries:
+    """
+    Generate independent variance-standardized Student-t observations.
+
+    Let T_t independently follow a Student-t distribution with degrees
+    of freedom nu. For nu greater than 2:
+
+        Var(T_t) = nu / (nu - 2)
+
+    Therefore:
+
+        X_t = mean + sigma * sqrt((nu - 2) / nu) * T_t
+
+    satisfies:
+
+        E[X_t] = mean
+        Var(X_t) = sigma squared
+
+    Temporal dependence is absent by construction. Heavy tails remain.
+
+    When 2 < nu <= 4, variance exists but the fourth moment is infinite.
+    When nu > 4, theoretical excess kurtosis equals:
+
+        6 / (nu - 4)
+    """
+    _validate_common(
+        n=n,
+        seed=seed,
+    )
+    _validate_finite(
+        mean,
+        name="mean",
+    )
+    _validate_positive(
+        sigma,
+        name="sigma",
+    )
+    _validate_finite(
+        degrees_of_freedom,
+        name="degrees_of_freedom",
+    )
+
+    if degrees_of_freedom <= 2.0:
+        raise ValueError(
+            "degrees_of_freedom must exceed 2 for finite variance"
+        )
+
+    rng = np.random.default_rng(seed)
+
+    unscaled = rng.standard_t(
+        df=degrees_of_freedom,
+        size=n,
+    )
+
+    variance_scale = math.sqrt(
+        (degrees_of_freedom - 2.0)
+        / degrees_of_freedom
+    )
+
+    values = (
+        mean
+        + sigma
+        * variance_scale
+        * unscaled
+    ).astype(np.float64)
+
+    fourth_moment_state = (
+        "finite"
+        if degrees_of_freedom > 4.0
+        else "infinite"
+    )
+
+    theoretical_excess_kurtosis = (
+        6.0 / (degrees_of_freedom - 4.0)
+        if degrees_of_freedom > 4.0
+        else None
+    )
+
+    return SyntheticSeries(
+        values=_series(values),
+        process="iid_student_t",
+        seed=seed,
+        mechanism="independent heavy-tailed Student-t innovations",
+        expected_dependence="none",
+        parameters={
+            "n": n,
+            "degrees_of_freedom": degrees_of_freedom,
+            "mean": mean,
+            "sigma": sigma,
+            "target_variance": sigma**2,
+            "fourth_moment_state": fourth_moment_state,
+            "theoretical_excess_kurtosis": (
+                theoretical_excess_kurtosis
+            ),
+        },
+    )

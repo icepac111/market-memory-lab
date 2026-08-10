@@ -295,5 +295,5 @@ contract = pd.DataFrame(
 st.dataframe(
     contract,
     hide_index=True,
-    use_container_width=True,
+    width="stretch",
 )

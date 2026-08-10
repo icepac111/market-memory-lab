@@ -427,7 +427,7 @@ with overview_tab:
     st.dataframe(
         ledger,
         hide_index=True,
-        use_container_width=True,
+        width="stretch",
     )
 
 with null_tab:
@@ -543,7 +543,7 @@ with null_tab:
         st.dataframe(
             provenance,
             hide_index=True,
-            use_container_width=True,
+            width="stretch",
         )
 
     st.markdown(
@@ -617,7 +617,7 @@ with research_tab:
     st.dataframe(
         pipeline,
         hide_index=True,
-        use_container_width=True,
+        width="stretch",
     )
 
     st.markdown("### Candidate dissertation umbrella")

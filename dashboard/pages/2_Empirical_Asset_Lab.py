@@ -349,10 +349,12 @@ health = pd.DataFrame(
     ]
 )
 
+health["Result"] = health["Result"].astype("string")
+
 st.dataframe(
     health,
     hide_index=True,
-    use_container_width=True,
+    width="stretch",
 )
 
 if not evidence.is_valid:
@@ -535,7 +537,7 @@ with provenance_tab:
     st.dataframe(
         provenance,
         hide_index=True,
-        use_container_width=True,
+        width="stretch",
     )
 
     st.download_button(

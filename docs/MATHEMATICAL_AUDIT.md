@@ -284,3 +284,72 @@ Requirements for a correction:
 5. Changelog entry
 6. Recalculation of affected evidence
 7. Versioned release note when externally visible
+
+## Statistical safeguards added after the initial audit
+
+### Bonferroni adjustment
+
+For m tests:
+
+p_adjusted_i = min(m times p_i, 1)
+
+This controls family-wise error through the Bonferroni inequality and can
+be conservative.
+
+### Benjamini-Hochberg adjustment
+
+For sorted p-values p_(1) through p_(m):
+
+p_adjusted_(i)
+= min(
+    1,
+    minimum over j greater than or equal to i
+    of m times p_(j) divided by j
+  )
+
+Adjusted values are returned in original test order.
+
+Benjamini-Hochberg controls false discovery rate under its applicable
+assumptions. It does not establish economic importance or causation.
+
+### Corrected Monte Carlo p-value
+
+For B null simulations and r statistics at least as extreme as observed:
+
+p_corrected = (r + 1) / (B + 1)
+
+The system does not report a zero Monte Carlo p-value merely because no
+finite simulation exceeded the observation.
+
+### Binomial simulation uncertainty
+
+The raw null exceedance probability receives an exact Clopper-Pearson
+interval.
+
+This interval quantifies finite simulation-count uncertainty. It is not a
+confidence interval for investment return or model profitability.
+
+### Newey-West mean standard error
+
+Using Bartlett weights and maximum lag q:
+
+gamma_j
+= (1 / n) sum from t=j+1 to n of
+  (x_t - mean_x)(x_(t-j) - mean_x)
+
+long_run_variance
+= gamma_0
+  + 2 sum from j=1 to q of
+    (1 - j / (q + 1)) gamma_j
+
+standard_error_of_mean
+= square_root(long_run_variance / n)
+
+Required assumptions and limitations:
+
+- observations are ordered
+- observations represent equally spaced periods
+- the lag choice is explicit
+- this is asymptotic inference
+- HAC does not solve endogeneity, omitted variables, structural breaks,
+  data snooping, or poor model specification

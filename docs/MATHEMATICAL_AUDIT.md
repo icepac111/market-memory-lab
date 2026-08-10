@@ -398,3 +398,65 @@ Scientific boundaries:
 - Sample kurtosis can be unstable, especially near the fourth-moment
   boundary.
 - No empirical market conclusion follows from the synthetic generator.
+
+## Covariance-stationary Gaussian AR(1) null
+
+The short-memory process is:
+
+X_t - mean
+= phi times (X_(t-1) - mean)
+  + epsilon_t
+
+where epsilon_t independently follows a Gaussian distribution with zero
+mean and innovation variance.
+
+Covariance stationarity requires:
+
+absolute_value(phi) < 1
+
+The unconditional variance is:
+
+innovation_variance / (1 - phi squared)
+
+The theoretical autocorrelation function is:
+
+rho(k) = phi to the power k
+
+The autocorrelation decays geometrically. Therefore this process exhibits
+short-range dependence rather than long-range dependence.
+
+The initial observation is drawn from the stationary distribution:
+
+X_0 follows a Gaussian distribution with:
+
+mean = declared process mean
+
+variance
+= innovation_variance / (1 - phi squared)
+
+This avoids arbitrary zero initialization and eliminates the need for a
+burn-in solely to approach the stationary marginal distribution.
+
+For the sample mean under a stationary AR(1), the large-sample variance is
+approximately:
+
+unconditional_variance / n
+times
+(1 + phi) / (1 - phi)
+
+The audit uses this dependence-aware asymptotic scale rather than the IID
+standard error.
+
+Purpose:
+
+The AR(1) process tests whether future estimators confuse ordinary
+short-range autocorrelation with genuine long-range dependence.
+
+Scientific boundaries:
+
+- AR(1) is not a complete model of financial markets.
+- Strong phi can look persistent in finite samples.
+- Geometric decay is not long memory.
+- Negative phi creates alternating short-range dependence.
+- A correct AR(1) fit does not establish causation.
+- No empirical-market conclusion follows from the synthetic generator.

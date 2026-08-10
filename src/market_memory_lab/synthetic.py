@@ -219,3 +219,128 @@ def iid_student_t(
             ),
         },
     )
+
+
+def ar1(
+    *,
+    n: int,
+    seed: int,
+    phi: float,
+    innovation_sigma: float = 1.0,
+    mean: float = 0.0,
+) -> SyntheticSeries:
+    """
+    Generate a covariance-stationary Gaussian AR(1) process.
+
+    The data-generating equation is:
+
+        X_t - mean
+        = phi * (X_(t-1) - mean) + epsilon_t
+
+    where:
+
+        epsilon_t independently follows
+        N(0, innovation_sigma squared)
+
+    Covariance stationarity requires:
+
+        absolute value of phi < 1
+
+    The unconditional variance is:
+
+        innovation_sigma squared / (1 - phi squared)
+
+    The theoretical autocorrelation function is:
+
+        rho(k) = phi to the power k
+
+    This is short-range dependence because the autocorrelation decays
+    geometrically rather than hyperbolically.
+
+    The initial observation is drawn from the stationary distribution.
+    Therefore, no arbitrary deterministic starting value or burn-in
+    period is required.
+    """
+    _validate_common(
+        n=n,
+        seed=seed,
+    )
+    _validate_finite(
+        phi,
+        name="phi",
+    )
+    _validate_positive(
+        innovation_sigma,
+        name="innovation_sigma",
+    )
+    _validate_finite(
+        mean,
+        name="mean",
+    )
+
+    if abs(phi) >= 1.0:
+        raise ValueError(
+            "covariance-stationary AR(1) requires absolute phi below 1"
+        )
+
+    unconditional_variance = (
+        innovation_sigma**2
+        / (1.0 - phi**2)
+    )
+
+    unconditional_sigma = math.sqrt(
+        unconditional_variance
+    )
+
+    rng = np.random.default_rng(seed)
+
+    values = np.empty(
+        n,
+        dtype=np.float64,
+    )
+
+    values[0] = rng.normal(
+        loc=mean,
+        scale=unconditional_sigma,
+    )
+
+    innovations = rng.normal(
+        loc=0.0,
+        scale=innovation_sigma,
+        size=n - 1,
+    )
+
+    for index in range(1, n):
+        values[index] = (
+            mean
+            + phi
+            * (values[index - 1] - mean)
+            + innovations[index - 1]
+        )
+
+    expected_dependence = (
+        "none"
+        if math.isclose(phi, 0.0, abs_tol=1e-15)
+        else "short_range"
+    )
+
+    return SyntheticSeries(
+        values=_series(values),
+        process="ar1",
+        seed=seed,
+        mechanism=(
+            "covariance-stationary Gaussian first-order autoregression"
+        ),
+        expected_dependence=expected_dependence,
+        parameters={
+            "n": n,
+            "phi": phi,
+            "innovation_sigma": innovation_sigma,
+            "mean": mean,
+            "unconditional_variance": unconditional_variance,
+            "theoretical_lag_one_autocorrelation": phi,
+            "autocorrelation_decay": "geometric",
+            "long_range_dependence": False,
+            "initialization": "stationary_distribution",
+        },
+    )

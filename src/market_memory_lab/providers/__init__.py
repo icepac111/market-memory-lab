@@ -11,6 +11,9 @@ from market_memory_lab.providers.frozen import (
     FrozenDemonstrationProvider,
     FrozenInstrumentDefinition,
 )
+from market_memory_lab.providers.yahoo_historical import (
+    YahooHistoricalProvider,
+)
 
 __all__ = [
     "FrozenDemonstrationProvider",
@@ -20,4 +23,5 @@ __all__ = [
     "ProviderDataset",
     "ProviderProvenance",
     "ProviderRequest",
+    "YahooHistoricalProvider",
 ]

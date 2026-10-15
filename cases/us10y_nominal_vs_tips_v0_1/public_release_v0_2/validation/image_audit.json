@@ -1,0 +1,37 @@
+{
+  "01_rate_structure_repaired.png": {
+    "bytes": 532080,
+    "height": 2373,
+    "mode": "RGBA",
+    "sha256": "95c717f420e60bf5af1bbba4c1ca17f5c8a8fee1fc7f7193a4cc3919bf06435f",
+    "width": 3190
+  },
+  "02_levels_vs_changes_repaired.png": {
+    "bytes": 680335,
+    "height": 1475,
+    "mode": "RGBA",
+    "sha256": "ade037d7c38d974fc4000bb2f006cc3cd4e749ba28e3fe0c78c47b2e3429bb43",
+    "width": 3463
+  },
+  "03_rolling_cross_correlation_repaired.png": {
+    "bytes": 189910,
+    "height": 1453,
+    "mode": "RGBA",
+    "sha256": "cf7831252d5a5c1069fd6e1c6cc103ca50531a915b2b71eec68c51c22b96905f",
+    "width": 3190
+  },
+  "04_change_volatility_repaired.png": {
+    "bytes": 454146,
+    "height": 1453,
+    "mode": "RGBA",
+    "sha256": "ef94a603496e45862603028c991bf02953257ff4aa89f3baa652f4880a1628ff",
+    "width": 3190
+  },
+  "05_treasury_structure_repaired.png": {
+    "bytes": 271653,
+    "height": 1795,
+    "mode": "RGBA",
+    "sha256": "eccac419b5fdfd1e1e37e15089f21c62d452a97d876e3caa8d13a04c8060a271",
+    "width": 3158
+  }
+}

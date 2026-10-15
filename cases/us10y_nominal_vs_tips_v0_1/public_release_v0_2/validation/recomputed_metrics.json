@@ -1,0 +1,21 @@
+{
+  "change_pairs": 5931,
+  "change_pearson": 0.812350127366915,
+  "change_spearman": 0.8162332580972177,
+  "common_end": "2026-09-17",
+  "common_observations": 5932,
+  "common_start": "2003-01-02",
+  "latest_inflation_compensation_pct": 2.33,
+  "latest_nominal_pct": 4.94,
+  "latest_real_pct": 2.61,
+  "latest_spread_percentile": 68.6783546864464,
+  "level_pearson": 0.9417147796770367,
+  "level_spearman": 0.9480153829563935,
+  "rolling_cross_corr_latest": 0.8857363654835712,
+  "rolling_cross_corr_max": 0.9491828135377163,
+  "rolling_cross_corr_min": 0.6149699107518425,
+  "rolling_cross_corr_valid_n": 5806,
+  "source_file": "cases/us10y_nominal_vs_tips_v0_1/analysis/runs/20260921T200424Z/processed/common_valid_analysis.csv",
+  "source_sha256": "789c78e6de24d532c8216beaeeedf5c9517a9e28e54f3a49ca24b15a636d2cf4",
+  "spread_identity_max_abs_error": 8.881784197001252e-16
+}

@@ -1,0 +1,23 @@
+I wanted to understand what the U.S. 10-year nominal Treasury yield and 10-year real TIPS yield reveal when they move together or apart.
+
+I analyzed 5,932 common valid observations from 2003-01-02 through 2026-09-17 using Federal Reserve H.15 constant-maturity yield series. Missing observations were not filled.
+
+On the latest common date, the nominal yield was 4.94% and the real yield was 2.61%. Their difference was 2.33 percentage points, or 233 basis points.
+
+That difference is inflation compensation, not exact expected inflation. It can also reflect inflation risk premium, relative liquidity, market technicals, and measurement effects.
+
+The harder test was whether changes between successive common observations moved together. The full-sample Pearson correlation was 0.94 in levels and 0.81 in successive changes. The rolling cross-correlation also moved through a range rather than remaining constant, which is why a single full-sample number should not be treated as a permanent market law.
+
+The molecular visual is an intuition layer for the measured structure. The dotted arrows show candidate influences, not identified causal effects.
+
+What this evidence does not establish:
+• future inflation
+• future Treasury or TIPS returns
+• causation
+• investment superiority
+• a trading signal
+• a buy or sell recommendation
+
+This is an educational market-structure study, not individualized investment advice.
+
+#FixedIncome #Treasury #TIPS #FinancialDataScience #FinTech #QuantitativeResearch #AssetPricing

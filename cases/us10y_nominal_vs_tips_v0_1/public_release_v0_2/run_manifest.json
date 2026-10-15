@@ -1,0 +1,13 @@
+{
+  "claim_boundary": "Descriptive market-structure analysis only. No causal, predictive, alpha, or investment recommendation claim.",
+  "created_utc": "2026-09-21T20:14:02.252832+00:00",
+  "platform": "Linux-6.18.7-76061807-generic-x86_64-with-glibc2.39",
+  "python": "3.12.13 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:38:16) [GCC 14.3.0]",
+  "run_id": "20260921T201352Z",
+  "source_analysis_sha256": "789c78e6de24d532c8216beaeeedf5c9517a9e28e54f3a49ca24b15a636d2cf4",
+  "source_run": "cases/us10y_nominal_vs_tips_v0_1/analysis/runs/20260921T200424Z",
+  "status": "complete",
+  "version": "0.2.0",
+  "public_release": true,
+  "public_release_scope": "Curated figures, verified metrics, publication QA, claim boundaries, and reproducible source scripts."
+}

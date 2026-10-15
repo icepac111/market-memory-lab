@@ -1,0 +1,10 @@
+{
+  "candidate_influences_labeled_noncausal": true,
+  "investment_advice_present": false,
+  "molecular_node_labels_unclipped_by_design": true,
+  "rolling_cross_correlation_not_constant": true,
+  "rolling_cross_correlation_recomputed_directly": true,
+  "spread_identity_passed": true,
+  "status": "publication_candidate",
+  "successive_observation_wording_used": true
+}

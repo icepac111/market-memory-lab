@@ -61,7 +61,6 @@ No package installation is performed by this script.
 from __future__ import annotations
 
 import argparse
-import csv
 import hashlib
 import importlib.metadata
 import json
@@ -69,7 +68,6 @@ import logging
 import os
 import platform
 import re
-import shutil
 import socket
 import sys
 import traceback
@@ -77,6 +75,8 @@ from dataclasses import asdict, dataclass
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
+
+LOGGER = logging.getLogger(__name__)
 
 try:
     import pandas as pd
@@ -207,14 +207,21 @@ def utc_now() -> datetime:
 
 
 def iso_z(value: datetime) -> str:
-    return value.astimezone(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return (
+        value.astimezone(timezone.utc)
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
 
 
 def parse_iso_date(value: str) -> date:
     try:
         return date.fromisoformat(value)
     except ValueError as exc:
-        raise argparse.ArgumentTypeError(f"Invalid ISO date {value!r}; expected YYYY-MM-DD") from exc
+        raise argparse.ArgumentTypeError(
+            f"Invalid ISO date {value!r}; expected YYYY-MM-DD"
+        ) from exc
 
 
 def safe_run_id(value: str) -> str:
@@ -246,7 +253,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--end",
         type=parse_iso_date,
-        default=date.today(),
+        default=datetime.now(tz=timezone.utc).date(),
         help="Inclusive contract end date.",
     )
     parser.add_argument(
@@ -262,7 +269,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="Preserve and report incomplete source layers instead of failing the run.",
     )
     parser.add_argument("--timeout-seconds", type=int, default=60)
-    parser.add_argument("--log-level", choices=["DEBUG", "INFO", "WARNING"], default="INFO")
+    parser.add_argument(
+        "--log-level", choices=["DEBUG", "INFO", "WARNING"], default="INFO"
+    )
     return parser
 
 
@@ -328,9 +337,13 @@ def normalize_official_csv(raw_path: Path, series_id: str) -> pd.DataFrame:
     if frame.empty:
         raise EvidenceError(f"{series_id}: source returned an empty CSV")
 
-    date_candidates = [c for c in frame.columns if c.upper() in {"DATE", "OBSERVATION_DATE"}]
+    date_candidates = [
+        c for c in frame.columns if c.upper() in {"DATE", "OBSERVATION_DATE"}
+    ]
     if not date_candidates:
-        raise EvidenceError(f"{series_id}: no date column; columns={list(frame.columns)!r}")
+        raise EvidenceError(
+            f"{series_id}: no date column; columns={list(frame.columns)!r}"
+        )
     date_column = date_candidates[0]
 
     value_candidates = [c for c in frame.columns if c.upper() == series_id.upper()]
@@ -356,13 +369,22 @@ def normalize_official_csv(raw_path: Path, series_id: str) -> pd.DataFrame:
         bad_count = int(normalized["observation_date"].isna().sum())
         raise EvidenceError(f"{series_id}: {bad_count} unparsable observation dates")
     if normalized["observation_date"].duplicated().any():
-        dupes = normalized.loc[
-            normalized["observation_date"].duplicated(keep=False), "observation_date"
-        ].dt.strftime("%Y-%m-%d").tolist()
+        dupes = (
+            normalized.loc[
+                normalized["observation_date"].duplicated(keep=False),
+                "observation_date",
+            ]
+            .dt.strftime("%Y-%m-%d")
+            .tolist()
+        )
         raise EvidenceError(f"{series_id}: duplicate dates detected: {dupes[:10]}")
 
-    normalized = normalized.sort_values("observation_date", kind="mergesort").reset_index(drop=True)
-    normalized["observation_date"] = normalized["observation_date"].dt.strftime("%Y-%m-%d")
+    normalized = normalized.sort_values(
+        "observation_date", kind="mergesort"
+    ).reset_index(drop=True)
+    normalized["observation_date"] = normalized["observation_date"].dt.strftime(
+        "%Y-%m-%d"
+    )
     return normalized
 
 
@@ -381,7 +403,9 @@ def validate_official_frame(
     outside = (parsed_dates < start) | (parsed_dates > end)
     if bool(outside.any()):
         examples = valid.loc[outside, "observation_date"].head(10).tolist()
-        raise EvidenceError(f"{series_id}: source returned dates outside requested range: {examples}")
+        raise EvidenceError(
+            f"{series_id}: source returned dates outside requested range: {examples}"
+        )
 
     nonfinite = ~pd.Series(pd.array(values.dropna(), dtype="Float64")).map(
         lambda x: pd.notna(x) and float("-inf") < float(x) < float("inf")
@@ -390,7 +414,7 @@ def validate_official_frame(
         raise EvidenceError(f"{series_id}: non-finite numeric values detected")
 
     return {
-        "rows_raw": int(len(frame)),
+        "rows_raw": len(frame),
         "rows_valid": int(values.notna().sum()),
         "missing_value_count": int(values.isna().sum()),
         "earliest_valid_date": str(valid["observation_date"].iloc[0]),
@@ -417,7 +441,7 @@ def download_fred_series(
     }
     retrieved_at = iso_z(utc_now())
     raw_path = raw_dir / "official" / f"fred_{series_id}_{start}_{end}.csv"
-    logging.info("Downloading official series %s", series_id)
+    LOGGER.info("Downloading official series %s", series_id)
     response = session.get(
         FRED_CSV_URL,
         params=params,
@@ -427,7 +451,7 @@ def download_fred_series(
     response.raise_for_status()
     content_type = response.headers.get("Content-Type", "")
     if "text" not in content_type.lower() and "csv" not in content_type.lower():
-        logging.warning("%s returned unusual Content-Type: %s", series_id, content_type)
+        LOGGER.warning("%s returned unusual Content-Type: %s", series_id, content_type)
     response_to_file(response, raw_path)
     if raw_path.stat().st_size == 0:
         raise EvidenceError(f"{series_id}: downloaded file is empty")
@@ -436,7 +460,9 @@ def download_fred_series(
     audit = validate_official_frame(normalized, series_id, start, end)
     normalized_path = processed_dir / "official" / f"{series_id}_normalized.csv"
     normalized_path.parent.mkdir(parents=True, exist_ok=True)
-    normalized.to_csv(normalized_path, index=False, lineterminator="\n", float_format="%.10g")
+    normalized.to_csv(
+        normalized_path, index=False, lineterminator="\n", float_format="%.10g"
+    )
 
     record = DownloadRecord(
         layer="official_yield",
@@ -463,7 +489,9 @@ def download_fred_series(
     return record, normalized, audit
 
 
-def normalize_yfinance_columns(frame: pd.DataFrame, symbols: Sequence[str]) -> pd.DataFrame:
+def normalize_yfinance_columns(
+    frame: pd.DataFrame, symbols: Sequence[str]
+) -> pd.DataFrame:
     if frame.empty:
         raise EvidenceError("yfinance returned an empty dataset")
 
@@ -499,7 +527,9 @@ def normalize_yfinance_columns(frame: pd.DataFrame, symbols: Sequence[str]) -> p
     output["observation_date"] = parsed.dt.strftime("%Y-%m-%d")
     if output["observation_date"].duplicated().any():
         raise EvidenceError("ETF data contain duplicate observation dates")
-    return output.sort_values("observation_date", kind="mergesort").reset_index(drop=True)
+    return output.sort_values("observation_date", kind="mergesort").reset_index(
+        drop=True
+    )
 
 
 def find_etf_price_column(frame: pd.DataFrame, symbol: str) -> tuple[str, str]:
@@ -511,7 +541,9 @@ def find_etf_price_column(frame: pd.DataFrame, symbol: str) -> tuple[str, str]:
         if column in frame.columns:
             return column, interpretation
     available = [c for c in frame.columns if c.startswith(f"{symbol}__")]
-    raise EvidenceError(f"{symbol}: no adjusted-close or close column; available={available!r}")
+    raise EvidenceError(
+        f"{symbol}: no adjusted-close or close column; available={available!r}"
+    )
 
 
 def download_etfs(
@@ -543,7 +575,7 @@ def download_etfs(
         "threads": False,
         "progress": False,
     }
-    logging.info("Downloading ETF context: %s", ", ".join(symbols))
+    LOGGER.info("Downloading ETF context: %s", ", ".join(symbols))
     downloaded = yf.download(
         tickers=list(symbols),
         start=params["start"],
@@ -559,13 +591,17 @@ def download_etfs(
         multi_level_index=True,
     )
     normalized = normalize_yfinance_columns(downloaded, symbols)
-    parsed_dates = pd.to_datetime(normalized["observation_date"], errors="raise").dt.date
+    parsed_dates = pd.to_datetime(
+        normalized["observation_date"], errors="raise"
+    ).dt.date
     outside = (parsed_dates < start) | (parsed_dates > end)
     if bool(outside.any()):
         examples = normalized.loc[outside, "observation_date"].head(10).tolist()
         raise EvidenceError(f"ETF download contains dates outside contract: {examples}")
 
-    raw_path = raw_dir / "market_proxy" / f"yfinance_{'_'.join(symbols)}_{start}_{end}.csv"
+    raw_path = (
+        raw_dir / "market_proxy" / f"yfinance_{'_'.join(symbols)}_{start}_{end}.csv"
+    )
     raw_path.parent.mkdir(parents=True, exist_ok=True)
     normalized.to_csv(raw_path, index=False, lineterminator="\n", float_format="%.10g")
 
@@ -616,7 +652,9 @@ def download_etfs(
 
     processed_path = processed_dir / "market_proxy" / "IEF_TIP_selected_prices.csv"
     processed_path.parent.mkdir(parents=True, exist_ok=True)
-    selected.to_csv(processed_path, index=False, lineterminator="\n", float_format="%.10g")
+    selected.to_csv(
+        processed_path, index=False, lineterminator="\n", float_format="%.10g"
+    )
     audits["combined"] = {
         "processed_file": relative_to_run(processed_path, run_root),
         "processed_sha256": sha256_file(processed_path),
@@ -639,7 +677,9 @@ def construct_official_common_panel(
     dgs = frames["DGS10"].copy()
     dfii = frames["DFII10"].copy()
     merged = dgs.merge(dfii, on="observation_date", how="outer", validate="one_to_one")
-    merged = merged.sort_values("observation_date", kind="mergesort").reset_index(drop=True)
+    merged = merged.sort_values("observation_date", kind="mergesort").reset_index(
+        drop=True
+    )
     merged["is_common_valid"] = merged[["DGS10", "DFII10"]].notna().all(axis=1)
     merged["inflation_compensation_pct_points"] = (
         merged["DGS10"] - merged["DFII10"]
@@ -660,9 +700,15 @@ def construct_official_common_panel(
     audit = {
         "outer_union_rows": int(len(merged)),
         "common_valid_rows": int(len(common)),
-        "dgs10_only_rows": int((merged["DGS10"].notna() & merged["DFII10"].isna()).sum()),
-        "dfii10_only_rows": int((merged["DGS10"].isna() & merged["DFII10"].notna()).sum()),
-        "both_missing_rows": int((merged[["DGS10", "DFII10"]].isna().all(axis=1)).sum()),
+        "dgs10_only_rows": int(
+            (merged["DGS10"].notna() & merged["DFII10"].isna()).sum()
+        ),
+        "dfii10_only_rows": int(
+            (merged["DGS10"].isna() & merged["DFII10"].notna()).sum()
+        ),
+        "both_missing_rows": int(
+            (merged[["DGS10", "DFII10"]].isna().all(axis=1)).sum()
+        ),
         "earliest_common_date": str(common["observation_date"].iloc[0]),
         "latest_common_date": str(common["observation_date"].iloc[-1]),
         "outer_panel_file": relative_to_run(panel_path, run_root),
@@ -688,7 +734,9 @@ def construct_etf_common_panel(
     if missing_columns:
         raise EvidenceError(f"ETF selected dataset missing columns: {missing_columns}")
     common = selected.loc[selected[columns[1:]].notna().all(axis=1), columns].copy()
-    common = common.sort_values("observation_date", kind="mergesort").reset_index(drop=True)
+    common = common.sort_values("observation_date", kind="mergesort").reset_index(
+        drop=True
+    )
     if common.empty:
         raise EvidenceError("IEF and TIP have no common valid market dates")
     path = processed_dir / "market_proxy" / "IEF_TIP_common_valid_prices.csv"
@@ -708,12 +756,18 @@ def construct_etf_common_panel(
     return common, audit
 
 
-def collect_hashes(run_root: Path, excluded_names: Iterable[str] = ()) -> list[tuple[str, str]]:
+def collect_hashes(
+    run_root: Path, excluded_names: Iterable[str] = ()
+) -> list[tuple[str, str]]:
     excluded = set(excluded_names)
     rows: list[tuple[str, str]] = []
     for path in sorted(p for p in run_root.rglob("*") if p.is_file()):
         relative = path.relative_to(run_root).as_posix()
-        if relative in excluded or path.name.endswith(".part") or path.name.endswith(".tmp"):
+        if (
+            relative in excluded
+            or path.name.endswith(".part")
+            or path.name.endswith(".tmp")
+        ):
             continue
         rows.append((sha256_file(path), relative))
     return rows
@@ -791,7 +845,9 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     project_root = args.project_root.expanduser().resolve()
     if not project_root.exists() or not project_root.is_dir():
-        raise SystemExit(f"Project root does not exist or is not a directory: {project_root}")
+        raise SystemExit(
+            f"Project root does not exist or is not a directory: {project_root}"
+        )
 
     run_id = args.run_id or utc_now().strftime("%Y%m%dT%H%M%SZ")
     case_root = project_root / args.case_relpath
@@ -870,7 +926,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 official_frames[series_id] = frame
                 validations[f"official_{series_id}"] = audit
             except Exception as exc:
-                logging.exception("Official series %s failed", series_id)
+                LOGGER.exception("Official series %s failed", series_id)
                 failure = DownloadRecord(
                     layer="official_yield",
                     identifier=series_id,
@@ -893,13 +949,15 @@ def main(argv: Sequence[str] | None = None) -> int:
                     error_message=str(exc),
                 )
                 records.append(failure)
-                errors.append({
-                    "layer": "official_yield",
-                    "identifier": series_id,
-                    "error_type": type(exc).__name__,
-                    "error_message": str(exc),
-                    "traceback": traceback.format_exc(),
-                })
+                errors.append(
+                    {
+                        "layer": "official_yield",
+                        "identifier": series_id,
+                        "error_type": type(exc).__name__,
+                        "error_message": str(exc),
+                        "traceback": traceback.format_exc(),
+                    }
+                )
                 if not args.allow_partial:
                     raise
 
@@ -928,14 +986,16 @@ def main(argv: Sequence[str] | None = None) -> int:
                 )
                 validations["market_proxy_common_panel"] = pair_audit
             except Exception as exc:
-                logging.exception("ETF market-proxy layer failed")
-                errors.append({
-                    "layer": "market_proxy",
-                    "identifier": "IEF,TIP",
-                    "error_type": type(exc).__name__,
-                    "error_message": str(exc),
-                    "traceback": traceback.format_exc(),
-                })
+                LOGGER.exception("ETF market-proxy layer failed")
+                errors.append(
+                    {
+                        "layer": "market_proxy",
+                        "identifier": "IEF,TIP",
+                        "error_type": type(exc).__name__,
+                        "error_message": str(exc),
+                        "traceback": traceback.format_exc(),
+                    }
+                )
                 for symbol in ETF_SPECS:
                     records.append(
                         DownloadRecord(
@@ -965,10 +1025,14 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         failed = [r for r in records if r.status != "success"]
         required_success = set(OFFICIAL_SERIES) <= {
-            r.identifier for r in records if r.layer == "official_yield" and r.status == "success"
+            r.identifier
+            for r in records
+            if r.layer == "official_yield" and r.status == "success"
         }
         etf_success = args.skip_etfs or set(ETF_SPECS) <= {
-            r.identifier for r in records if r.layer == "market_proxy" and r.status == "success"
+            r.identifier
+            for r in records
+            if r.layer == "market_proxy" and r.status == "success"
         }
         if required_success and etf_success and not failed:
             overall_status = "complete"
@@ -980,13 +1044,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     except Exception:
         overall_status = "failed"
         if not errors:
-            errors.append({
-                "layer": "run",
-                "identifier": CASE_VERSION,
-                "error_type": sys.exc_info()[0].__name__ if sys.exc_info()[0] else "UnknownError",
-                "error_message": str(sys.exc_info()[1]),
-                "traceback": traceback.format_exc(),
-            })
+            errors.append(
+                {
+                    "layer": "run",
+                    "identifier": CASE_VERSION,
+                    "error_type": sys.exc_info()[0].__name__
+                    if sys.exc_info()[0]
+                    else "UnknownError",
+                    "error_message": str(sys.exc_info()[1]),
+                    "traceback": traceback.format_exc(),
+                }
+            )
     finally:
         session.close()
         completed_at = iso_z(utc_now())
@@ -1003,13 +1071,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             "status": overall_status,
             "started_at_utc": started_at,
             "completed_at_utc": completed_at,
-            "official_layer_complete": set(OFFICIAL_SERIES) <= {
+            "official_layer_complete": set(OFFICIAL_SERIES)
+            <= {
                 r.identifier
                 for r in records
                 if r.layer == "official_yield" and r.status == "success"
             },
             "market_proxy_requested": not args.skip_etfs,
-            "market_proxy_complete": args.skip_etfs or set(ETF_SPECS) <= {
+            "market_proxy_complete": args.skip_etfs
+            or set(ETF_SPECS)
+            <= {
                 r.identifier
                 for r in records
                 if r.layer == "market_proxy" and r.status == "success"
@@ -1024,13 +1095,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         write_json(dirs["manifests"] / "run_manifest.json", run_manifest)
         write_sha256sums(run_root)
 
-    print(json.dumps({
-        "status": overall_status,
-        "run_root": str(run_root),
-        "records": len(records),
-        "errors": len(errors),
-        "sha256sums": str(run_root / "SHA256SUMS"),
-    }, indent=2))
+    print(
+        json.dumps(
+            {
+                "status": overall_status,
+                "run_root": str(run_root),
+                "records": len(records),
+                "errors": len(errors),
+                "sha256sums": str(run_root / "SHA256SUMS"),
+            },
+            indent=2,
+        )
+    )
 
     if overall_status == "complete":
         return 0

@@ -16,7 +16,7 @@ import json
 import os
 import platform
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import matplotlib.dates as mdates
@@ -128,8 +128,8 @@ def load_and_validate(source_run: Path) -> tuple[pd.DataFrame, dict]:
         "source_sha256": sha256(source),
         "common_start": df.index.min().date().isoformat(),
         "common_end": df.index.max().date().isoformat(),
-        "common_observations": int(len(df)),
-        "change_pairs": int(len(changes)),
+        "common_observations": len(df),
+        "change_pairs": len(changes),
         "latest_nominal_pct": float(df.DGS10.iloc[-1]),
         "latest_real_pct": float(df.DFII10.iloc[-1]),
         "latest_inflation_compensation_pct": float(df.inflation_compensation.iloc[-1]),
@@ -251,9 +251,9 @@ def chart_2(df: pd.DataFrame, metrics: dict, out: Path):
         va="top",
         color=WHITE,
         fontsize=12,
-        bbox=dict(
-            facecolor=NAVY_2, edgecolor="none", alpha=0.78, boxstyle="round,pad=.45"
-        ),
+        bbox={
+            "facecolor": NAVY_2, "edgecolor": "none", "alpha": 0.78, "boxstyle": "round,pad=.45"
+        },
     )
 
     axes[1].scatter(
@@ -279,9 +279,9 @@ def chart_2(df: pd.DataFrame, metrics: dict, out: Path):
         va="top",
         color=WHITE,
         fontsize=12,
-        bbox=dict(
-            facecolor=NAVY_2, edgecolor="none", alpha=0.78, boxstyle="round,pad=.45"
-        ),
+        bbox={
+            "facecolor": NAVY_2, "edgecolor": "none", "alpha": 0.78, "boxstyle": "round,pad=.45"
+        },
     )
     fig.text(
         0.01,
@@ -336,9 +336,9 @@ def chart_3(df: pd.DataFrame, metrics: dict, out: Path):
         transform=ax.transAxes,
         color=WHITE,
         fontsize=11,
-        bbox=dict(
-            facecolor=NAVY_2, edgecolor="none", alpha=0.8, boxstyle="round,pad=.4"
-        ),
+        bbox={
+            "facecolor": NAVY_2, "edgecolor": "none", "alpha": 0.8, "boxstyle": "round,pad=.4"
+        },
     )
     fig.text(
         0.01,
@@ -485,7 +485,7 @@ def chart_5(df: pd.DataFrame, metrics: dict, out: Path):
         fontsize=16,
         weight="bold",
         transform=ax.transAxes,
-        bbox=dict(facecolor=NAVY_2, edgecolor="#42617D", boxstyle="round,pad=.55"),
+        bbox={"facecolor": NAVY_2, "edgecolor": "#42617D", "boxstyle": "round,pad=.55"},
     )
 
     factors = [
@@ -574,7 +574,7 @@ def main():
         raise SystemExit(f"Missing project root: {root}")
     if not source_run.is_dir():
         raise SystemExit(f"Missing source run: {source_run}")
-    run_id = args.run_id or datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    run_id = args.run_id or datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     out_run = (
         root / "cases/us10y_nominal_vs_tips_v0_1/publication_repairs/runs" / run_id
     )
@@ -654,7 +654,7 @@ This is an educational market-structure study, not individualized investment adv
         "version": VERSION,
         "status": "complete",
         "run_id": run_id,
-        "created_utc": datetime.now(timezone.utc).isoformat(),
+        "created_utc": datetime.now(UTC).isoformat(),
         "source_run": str(source_run),
         "source_analysis_sha256": metrics["source_sha256"],
         "python": sys.version,

@@ -17,13 +17,13 @@ import os
 import platform
 import shutil
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 
 VERSION = "0.1.0"
 EXPECTED = {
@@ -162,7 +162,7 @@ def correlations(df: pd.DataFrame, label: str) -> dict:
 
     def pair(x, a, b):
         return {
-            "n": int(len(x)),
+            "n": len(x),
             "pearson": float(x[a].corr(x[b], method="pearson")),
             "spearman": float(x[a].corr(x[b], method="spearman")),
         }
@@ -455,7 +455,7 @@ def make_figures(df: pd.DataFrame, out: Path, metrics: dict):
             ha="center",
             color=STEEL,
             fontsize=9,
-            arrowprops=dict(arrowstyle="->", color="#39516B", alpha=0.75),
+            arrowprops={"arrowstyle": "->", "color": "#39516B", "alpha": 0.75},
             xycoords=ax.transAxes,
             textcoords=ax.transAxes,
         )
@@ -501,7 +501,7 @@ def main():
     inp = a.input_dir.expanduser().resolve()
     if not root.is_dir():
         raise SystemExit(f"Missing project root: {root}")
-    run_id = a.run_id or datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    run_id = a.run_id or datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     run = root / "cases/us10y_nominal_vs_tips_v0_1/analysis/runs" / run_id
     if run.exists():
         raise SystemExit(f"Refusing overwrite: {run}")
@@ -646,7 +646,7 @@ def main():
         "status": "complete",
         "version": VERSION,
         "run_id": run_id,
-        "created_utc": datetime.now(timezone.utc).isoformat(),
+        "created_utc": datetime.now(UTC).isoformat(),
         "python": sys.version,
         "platform": platform.platform(),
         "input_hashes": checks,

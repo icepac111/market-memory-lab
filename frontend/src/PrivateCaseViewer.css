@@ -1,0 +1,203 @@
+.private-viewer { margin-top: 30px; }
+.private-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.private-description {
+  max-width: 780px;
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: .85rem;
+  line-height: 1.8;
+}
+.private-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0 12px;
+}
+.private-file-label {
+  cursor: pointer;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: linear-gradient(115deg, #a2f7d0, #c4a7ff);
+  color: #111627;
+  font-size: .8rem;
+  font-weight: 750;
+}
+.private-file-input {
+  max-width: 100%;
+  color: var(--muted);
+  font-size: .75rem;
+}
+.private-small {
+  color: var(--muted);
+  font-size: .72rem;
+  line-height: 1.7;
+}
+.private-error {
+  padding: 14px;
+  margin-top: 14px;
+  color: #ffd0ce;
+  background: #ff696915;
+  border: 1px solid #ff69694d;
+  border-radius: 10px;
+}
+.private-case-meta { margin-top: 28px; }
+.private-case-meta h3 { font-size: 1.15rem; }
+.private-case-meta p {
+  color: var(--muted);
+  margin-top: 9px;
+  font-size: .78rem;
+  line-height: 1.7;
+}
+.private-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 22px;
+}
+.private-metrics > div {
+  padding: 18px;
+  border: 1px solid #ffffff18;
+  background: #080b164d;
+  border-radius: 12px;
+}
+.private-metrics span {
+  display: block;
+  color: var(--muted);
+  font-size: .7rem;
+  line-height: 1.6;
+}
+.private-metrics strong {
+  display: block;
+  margin-top: 12px;
+  color: var(--mint);
+  font-size: clamp(1.1rem, 2.5vw, 1.7rem);
+  font-variant-numeric: tabular-nums;
+}
+.private-controls button[aria-pressed="true"] {
+  color: var(--mint);
+  border-color: #a2f7d080;
+  background: #a2f7d013;
+}
+.private-chart { margin-top: 20px; }
+.private-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid #ffffff12;
+  border-radius: 12px;
+  background: #090e1b;
+}
+.private-chart text {
+  fill: #b6bfd8;
+  font: 12px ui-monospace, monospace;
+}
+.private-chart > p { margin-top: 10px; }
+.private-details {
+  margin-top: 22px;
+  padding: 18px;
+  border: 1px solid #ffffff18;
+  border-radius: 12px;
+  font-size: .8rem;
+  line-height: 1.8;
+}
+.private-details summary { cursor: pointer; color: #d6c5ff; }
+.private-details p { margin-top: 14px; color: var(--muted); }
+.private-details ul { padding-left: 20px; color: var(--muted); }
+@media (max-width: 750px) {
+  .private-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 400px) {
+  .private-metrics { grid-template-columns: 1fr; }
+}
+
+/* Local case chart inspection controls */
+.private-inspector {
+  margin-bottom: 16px;
+  padding: 18px;
+  border: 1px solid #c4a7ff35;
+  border-radius: 14px;
+  background: linear-gradient(120deg, #a2f7d009, #c4a7ff10);
+}
+.private-inspector-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.private-active-date {
+  margin-top: 7px;
+  color: #f0eeff;
+  font: 1.15rem ui-monospace, monospace;
+}
+.private-hover-values {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+.private-hover-asset {
+  padding: 14px;
+  background: #080b1670;
+  border: 1px solid #ffffff12;
+  border-radius: 10px;
+}
+.private-asset-name {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 700;
+  font-size: .85rem;
+}
+.private-chart-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.private-hover-asset dl { margin: 12px 0 0; }
+.private-hover-asset dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 8px;
+}
+.private-hover-asset dt {
+  margin: 0;
+  color: var(--muted);
+  font-size: .7rem;
+  line-height: 1.7;
+}
+.private-hover-asset dd {
+  margin: 0;
+  color: #edf0ff;
+  font-size: .83rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.private-chart svg { cursor: crosshair; }
+.private-date-control {
+  margin-top: 18px;
+  padding: 14px;
+  background: #ffffff04;
+  border-radius: 10px;
+}
+.private-date-control label {
+  display: block;
+  color: var(--muted);
+  font-size: .75rem;
+}
+.private-date-control strong { color: #e7eaff; font-weight: 500; }
+.private-date-control input {
+  display: block;
+  width: 100%;
+  margin: 16px 0 3px;
+  accent-color: #a2f7d0;
+  cursor: pointer;
+}

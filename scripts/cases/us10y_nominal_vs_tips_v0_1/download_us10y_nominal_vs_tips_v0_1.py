@@ -71,10 +71,11 @@ import re
 import socket
 import sys
 import traceback
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import asdict, dataclass
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any
 
 LOGGER = logging.getLogger(__name__)
 
@@ -203,12 +204,12 @@ class DownloadRecord:
 
 
 def utc_now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def iso_z(value: datetime) -> str:
     return (
-        value.astimezone(timezone.utc)
+        value.astimezone(UTC)
         .replace(microsecond=0)
         .isoformat()
         .replace("+00:00", "Z")
@@ -253,7 +254,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--end",
         type=parse_iso_date,
-        default=datetime.now(tz=timezone.utc).date(),
+        default=datetime.now(tz=UTC).date(),
         help="Inclusive contract end date.",
     )
     parser.add_argument(
@@ -629,7 +630,7 @@ def download_etfs(
                 retrieved_at_utc=retrieved_at,
                 raw_file=relative_to_run(raw_path, run_root),
                 raw_sha256=sha256_file(raw_path),
-                rows_raw=int(len(normalized)),
+                rows_raw=len(normalized),
                 rows_valid=int(valid_mask.sum()),
                 earliest_valid_date=str(valid_dates.iloc[0]),
                 latest_valid_date=str(valid_dates.iloc[-1]),
@@ -698,8 +699,8 @@ def construct_official_common_panel(
     common.to_csv(common_path, index=False, lineterminator="\n", float_format="%.10g")
 
     audit = {
-        "outer_union_rows": int(len(merged)),
-        "common_valid_rows": int(len(common)),
+        "outer_union_rows": len(merged),
+        "common_valid_rows": len(common),
         "dgs10_only_rows": int(
             (merged["DGS10"].notna() & merged["DFII10"].isna()).sum()
         ),
@@ -742,7 +743,7 @@ def construct_etf_common_panel(
     path = processed_dir / "market_proxy" / "IEF_TIP_common_valid_prices.csv"
     common.to_csv(path, index=False, lineterminator="\n", float_format="%.10g")
     audit = {
-        "common_valid_rows": int(len(common)),
+        "common_valid_rows": len(common),
         "earliest_common_date": str(common["observation_date"].iloc[0]),
         "latest_common_date": str(common["observation_date"].iloc[-1]),
         "common_valid_file": relative_to_run(path, run_root),
@@ -1042,6 +1043,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             overall_status = "failed"
 
     except Exception:
+        LOGGER.exception("Historical acquisition run failed")
         overall_status = "failed"
         if not errors:
             errors.append(
